@@ -1,0 +1,10 @@
+*
+!*.c
+!*.h
+!Makefile
+!README.*
+!.gitignore
+!src
+!include
+!shaders
+!*.glsl
