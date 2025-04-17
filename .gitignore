@@ -1,4 +1,6 @@
 *
+!STB_IMAGE
+!KHR
 !*.c
 !*.h
 !Makefile
