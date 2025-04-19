@@ -1,13 +1,27 @@
-Hello this is a test so today is Sunday April 13th 3:43 p.m.   
- I'm trying to do a project for my boot.dev course it involves opengl  
- so far I've created a make file and I've set up the directory structure and I learned a couple things about how to link libraries with GCC.  
+# Boot.dev project attempt 2 (or 3)
 
-Okay 603 p.m. Sunday April 13th  
- and I've added a couple configuration files to my opengl project  
- the one called compile commands.json is for the sublime LSP plug-in so that it recognizes the include folder in my project  
- the other one is the project file itselfWhere I've added settings for the sublime linter for GCC plugin so that it sees the include folder in my project   
- I also got the make file fixed well not exactly I had to move the Glad source file to the main project directory or rather the main source directory so that I didn't have a complicated makefile  
-Now I finally have a blank window for my opengl project it just shows a black window with a title and that's it. 
+## A very basic openGL with C (not C++) fps demo
 
-Sunday April 13th 10:48 p.m.  
- I've got a very basic program that shows a blue square in the middle of a window with a black background  
+This is just going to be a room that the player can move around in, and not much more than that.
+
+Why not? Because it would probably take a lot longer than the 20-40 hours I'm supposed to spend on this project to make a full game, or even a complete level.
+
+We'll see about the single level after I get a basic room to move around in.
+
+## Requirements
+
+Sorry Windows and Mac, Linux only (I know you're disappointed.)
+
+Should run on most x86_64 / amd64 platforms
+
+## Dependencies
+
+Shouldn't be any since all libraries are statically linked.
+
+## Installation
+
+Clone repo.
+From repo, run:
+$ make
+$ cd build
+$ ./main

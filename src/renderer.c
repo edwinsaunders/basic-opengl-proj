@@ -1,5 +1,6 @@
 #include "renderer.h"
 #include "glad/glad.h"
+#include "shader_path_res.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -133,8 +134,9 @@ void initRenderer(void) {
 	printf("VAO ID: %u\n", vao);
 	printf("VBO ID: %u\n", vbo);
 
-	
-	shaderProgram = createShaderProgram("shaders/vertex.glsl", "shaders/fragment.glsl");
+	char *vertshaderpath = get_shader_path("vertex.glsl");
+	char *fragshaderpath = get_shader_path("fragment.glsl");
+	shaderProgram = createShaderProgram(vertshaderpath, fragshaderpath);
 
 }
 

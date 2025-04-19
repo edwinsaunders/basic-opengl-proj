@@ -8,6 +8,7 @@ INCDIR = include
 OBJDIR = obj
 TESTDIR = tests
 TESTOBJDIR = $(OBJDIR)/tests
+OUTPUT_DIR = build
 
 # Source, object, and test files
 SOURCES = $(wildcard $(SRCDIR)/*.c $(SRCDIR)/glad/*.c)
@@ -17,10 +18,10 @@ TESTTARGETS = $(patsubst $(TESTDIR)/%.c,%,$(TESTSOURCES))
 
 # Default target
 .PHONY: all
-all: $(TARGET)
+all: $(OUTPUT_DIR)/$(TARGET)
 
 # Link object files to create main executable
-$(TARGET): $(OBJECTS)
+$(OUTPUT_DIR)/$(TARGET): $(OBJECTS) | $(OUTPUT_DIR)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 # Pattern rule for main object files
@@ -38,16 +39,20 @@ $(OBJDIR):
 $(TESTOBJDIR):
 	mkdir -p $(TESTOBJDIR)
 
+$(OUTPUT_DIR):
+	mkdir -p $(OUTPUT_DIR)
+
 # Test targets (e.g., make test_math)
 .PHONY: $(TESTTARGETS)
-$(TESTTARGETS): %: $(TESTOBJDIR)/%.o $(OBJDIR)/math_utils.o
-	$(CC) -o $@ $^ -lm
-	./$@
+$(TESTTARGETS): %: $(TESTOBJDIR)/%.o $(OBJDIR)/math_utils.o | $(OUTPUT_DIR)
+	$(CC) -o $(OUTPUT_DIR)/$@ $^ -lm
+	$(OUTPUT_DIR)/$@
 
 # Clean up
 .PHONY: clean
 clean:
-	rm -rf $(OBJDIR) $(TARGET) $(TESTTARGETS)
+	rm -rf $(OBJDIR) $(OUTPUT_DIR)
+#	rm -rf $(OBJDIR) $(TARGET) $(TESTTARGETS)
 
 # Automatic dependency tracking for main sources
 -include $(OBJECTS:.o=.d)
