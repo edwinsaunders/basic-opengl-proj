@@ -128,7 +128,6 @@ int test_mat4_multiply() {
         return 0;
     }
 
-    return 0;
 }
 
 int test_mat4_identity() {
@@ -159,12 +158,11 @@ int test_mat4_identity() {
         return 0;
     }
 
-    return 0;
 }
 
 int test_mat4_perspective() {
     float fov = 100.0f,
-          aspect = 0.75f,
+          aspect = 800.0f / 600.0f,
           near = 0.1f,
           far = 1000.0f;
 
@@ -175,16 +173,25 @@ int test_mat4_perspective() {
     
     expected.m[0][0] = 0.62932f;
     expected.m[1][1] = 0.83910f;
-    expected.m[2][2] = 1.00010f;
-    expected.m[3][2] = -0.10001f;
-    expected.m[2][3] = 1.0f;
+    expected.m[2][2] = -1.00020f;
+    expected.m[3][2] = -0.20002f;
+    expected.m[2][3] = -1.0f;
 
+    int pass = 1;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (fabs(actual.m[i][j] - expected.m[i][j]) >= EPSILON) {
+                pass = 0;
+            }
+        }
+    }
 
-    if (fabs(actual.m[0][0] - expected.m[0][0]) < EPSILON &&
-        fabs(actual.m[1][1] - expected.m[1][1]) < EPSILON &&
-        fabs(actual.m[2][2] - expected.m[2][2]) < EPSILON &&
-        fabs(actual.m[3][2] - expected.m[3][2]) < EPSILON &&
-        fabs(actual.m[2][3] - expected.m[2][3]) < EPSILON) {
+    // if (fabs(actual.m[0][0] - expected.m[0][0]) < EPSILON &&
+    //     fabs(actual.m[1][1] - expected.m[1][1]) < EPSILON &&
+    //     fabs(actual.m[2][2] - expected.m[2][2]) < EPSILON &&
+    //     fabs(actual.m[3][2] - expected.m[3][2]) < EPSILON &&
+    //     fabs(actual.m[2][3] - expected.m[2][3]) < EPSILON) {
+    if(pass) {
         printf("mat4_perspective: PASS\n");
 
         printf("Actual:\n");
@@ -195,17 +202,14 @@ int test_mat4_perspective() {
 
         mat4_print(expected);
 
-        return 1;
     } else {
-        printf("vec3_normalize: FAIL\n");
+        printf("mat4_perspective: FAIL\n");
         printf("Actual:\n");
         mat4_print(actual);
         printf("Expected:\n");
         mat4_print(expected);
-        return 0;
     }
-
-    return 0;
+    return pass;
 }
 
 int main() {

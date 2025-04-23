@@ -58,12 +58,24 @@ mat4 mat4_identity() {
 // Creates a perspective projection matrix (used for 3D viewing).
 mat4 mat4_perspective(float fov, float aspect, float near, float far) {
 	mat4 result = {0};
-	float fovCalc = 1.0f / tanf(fov * 0.5f / 180.0f * 3.14159f);
-	result.m[0][0] = aspect * fovCalc;
+
+	if (far <= near || aspect <= 0.0f || fov <= 0.0f) {
+	    // Handle error (e.g., log and return identity matrix)
+	    printf("Invalid input value(s) for projection matrix generation:\n");
+	    printf("far: %f\nnear: %f\naspect: %f\nfov: %f\n", far, near, aspect, fov);
+	    result.m[0][0] = 1.0f;
+	    result.m[1][1] = 1.0f;
+	    result.m[2][2] = 1.0f;
+	    result.m[3][3] = 1.0f;
+	    return result;
+	}
+
+	float fovCalc = 1.0f / tanf(fov * 0.5f * (M_PI / 180.0));
+	result.m[0][0] = fovCalc / aspect;
 	result.m[1][1] = fovCalc;
-	result.m[2][2] = far / (far - near);
-	result.m[3][2] = (-1.0f) * far * near / (far - near);
-	result.m[2][3] = 1.0f;
+	result.m[2][2] = -(far + near) / (far - near);
+	result.m[3][2] = (-2.0f) * far * near / (far - near);
+	result.m[2][3] = -1.0f;
 	return result;
 }
 
