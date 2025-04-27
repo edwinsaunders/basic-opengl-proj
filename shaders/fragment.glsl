@@ -1,5 +1,7 @@
+// fragment.glsl
 #version 330 core
-out vec4 FragColor; // Output color
+in vec3 ourColor;
+out vec4 FragColor;
 void main() {
-    FragColor = vec4(0.0, 0.0, 1.0, 1.0); // Blue (RGBA)
+    FragColor = vec4(ourColor, 1.0);
 }

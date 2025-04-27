@@ -1,156 +1,180 @@
+// renderer.c
 #include "renderer.h"
 #include "glad/glad.h"
+#include "globals.h"
 #include "shader_path_res.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "checkErr.h"
 
-static GLuint shaderProgram;
-static GLuint vao, vbo;
+// Static variables for shader program and vertex array/buffer objects
+GLuint shaderProgram;
+GLuint VAO, VBO;
 
+// Loads shader source code from a file
 char *loadShaderSource(const char *filename) {
-	// open file for read (gets pointer to file stream)
-	FILE *fp = fopen(filename, "r");
-	if (fp == NULL) {
-		perror("Error reading file.");
-		exit(1);
-	}
+    // Open file for reading
+    FILE *fp = fopen(filename, "r");
+    if (fp == NULL) {
+        perror("Error reading file.");
+        exit(1);
+    }
 
+    // Move to end of file to get size
+    fseek(fp, 0, SEEK_END);
+    // Store file size
+    long file_size = ftell(fp);
+    // Reset file pointer to beginning
+    rewind(fp);
 
-	// go to end of file to get size
-	fseek(fp, 0, SEEK_END);
-	
-	// store size
-	long file_size = ftell(fp);
+    // Allocate buffer for file content plus null terminator
+    char *buffer = malloc(file_size + 1);
+    if (buffer == NULL) {
+        perror("Error allocating buffer for text.");
+        exit(1);
+    }
 
-	// reset fp to beginning of file
-	rewind(fp);
+    // Read file into buffer and null-terminate
+    fread(buffer, 1, file_size, fp);
+    buffer[file_size] = '\0';
 
-	// allocate memory for string making room for null terminator
-	char *buffer = malloc(file_size + 1);
-	if (buffer == NULL) {
-		perror("Error allocating buffer for text.");
-		exit(1);
-	}
+    // Close file
+    fclose(fp);
 
-	// read file into buffer string and add null terminator
-	fread(buffer, 1, file_size, fp);
-	buffer[file_size] = '\0';
-
-	// close file
-	fclose(fp);
-
-	return buffer;
+    return buffer;
 }
 
+// Creates and compiles a shader program from vertex and fragment shader files
 GLuint createShaderProgram(const char* vertPath, const char* fragPath) {
-	GLuint vertShader = glad_glCreateShader(GL_VERTEX_SHADER);
-	GLuint fragShader = glad_glCreateShader(GL_FRAGMENT_SHADER);
+    // Create vertex and fragment shaders
+    GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
+    GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
 
-	const GLchar *vertexShaderCode = loadShaderSource(vertPath);
-	const GLchar *fragmentShaderCode = loadShaderSource(fragPath);
+    // Load shader source code
+    const GLchar *vertexShaderCode = loadShaderSource(vertPath);
+    const GLchar *fragmentShaderCode = loadShaderSource(fragPath);
 
-	glad_glShaderSource(vertShader, 1, &vertexShaderCode, NULL);
-	glad_glShaderSource(fragShader, 1, &fragmentShaderCode, NULL);
-	glad_glCompileShader(vertShader);
-	glad_glCompileShader(fragShader);
+    // Set shader source and compile
+    glShaderSource(vertShader, 1, &vertexShaderCode, NULL);
+    glShaderSource(fragShader, 1, &fragmentShaderCode, NULL);
+    glCompileShader(vertShader);
+    glCompileShader(fragShader);
 
-	GLuint program = glad_glCreateProgram();
-	glad_glAttachShader(program, vertShader);
-    glad_glAttachShader(program, fragShader);
+    // Create shader program and attach shaders
+    GLuint program = glCreateProgram();
+    glAttachShader(program, vertShader);
+    glAttachShader(program, fragShader);
 
+    // Link the program
     glLinkProgram(program);
 
-    
-
-
-    // Error checking for compilation
+    // Check vertex shader compilation status
     GLint success;
     GLchar infoLog[512];
-    glad_glGetShaderiv(vertShader, GL_COMPILE_STATUS, &success);
+    glGetShaderiv(vertShader, GL_COMPILE_STATUS, &success);
     if (!success) {
-        glad_glGetShaderInfoLog(vertShader, 512, NULL, infoLog);
+        glGetShaderInfoLog(vertShader, 512, NULL, infoLog);
         printf("Vertex shader compilation failed: %s\n", infoLog);
     } else {
         printf("Vertex shader compilation: Success\n");
     }
 
-    glad_glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
+    // Check fragment shader compilation status
+    glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
     if (!success) {
-        glad_glGetShaderInfoLog(fragShader, 512, NULL, infoLog);
+        glGetShaderInfoLog(fragShader, 512, NULL, infoLog);
         printf("Fragment shader compilation failed: %s\n", infoLog);
     } else {
         printf("Fragment shader compilation: Success\n");
     }
 
-    // Error checking for linking
-    glad_glGetProgramiv(program, GL_LINK_STATUS, &success);
+    // Check program linking status
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
     if (!success) {
-        glad_glGetProgramInfoLog(program, 512, NULL, infoLog);
+        glGetProgramInfoLog(program, 512, NULL, infoLog);
         printf("Shader program linking failed: %s\n", infoLog);
     } else {
         printf("Shader program linking: Success\n");
     }
 
-    // cleanup
+    // Clean up shaders and source code
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
     free((void *)vertexShaderCode);
     free((void *)fragmentShaderCode);
 
-	return program;	
+    return program;    
 }
 
+// Initializes the renderer: sets up viewport, cube vertices, shaders, and buffers
+// void initRenderer(void) {
+//     // Set viewport to match window size (800x600)
+//     glViewport(0, 0, width, height); // Match window size
+//     
+//     // Log first 12 vertices for debugging
+//     printf("Vertex data (first 12 vertices):\n");
+//     for (int i = 0; i < 36; i += 3) {
+//         printf("Vertex %d: (%f, %f, %f)\n", i/3, vertices[i], vertices[i+1], vertices[i+2]);
+//     }
+// 
+//     // Generate vertex array and buffer objects
+//     glGenVertexArrays(1, &VAO);
+//     glGenBuffers(1, &VBO);
+// 
+//     // Log VAO and VBO IDs for debugging
+//     printf("VAO ID: %u\n", VAO);
+//     printf("VBO ID: %u\n", VBO);
+// 
+//     // Bind and upload vertex data to VBO
+//     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+//     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+// 
+//     // Bind VAO for vertex attribute setup
+//     glBindVertexArray(VAO);
+// 
+//     // Set position attribute (3 floats per vertex, starting at offset 0)
+//     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+//     glEnableVertexAttribArray(0);
+//     // Set color attribute (3 floats per vertex, starting after position)
+//     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+//     glEnableVertexAttribArray(1);
+// 
+//     // Enable depth testing for 3D rendering
+//     glEnable(GL_DEPTH_TEST);
+// 
+//     // Enable back face culling
+//     glEnable(GL_CULL_FACE);
+//     glCullFace(GL_BACK);
+//     glFrontFace(GL_CCW); // Counter-clockwise winding for front faces
+// 
+//     
+// }
 
-void initRenderer(void) {
-	glViewport(0, 0, 800, 600); // Match window size
-	float vertices[] = {
-	    -0.5f, -0.5f, // Bottom-left (Triangle 1)
-    	 0.5f, -0.5f, // Bottom-right (Triangle 1)
-    	 0.5f,  0.5f, // Top-right (Triangle 1)
-    	-0.5f, -0.5f, // Bottom-left (Triangle 2)
-    	 0.5f,  0.5f, // Top-right (Triangle 2)
-    	-0.5f,  0.5f  // Top-left (Triangle 2)
-	};
-
-	printf("Vertex data:\n");
-    for (int i = 0; i < 12; i += 2) {
-        printf("Vertex %d: (%f, %f)\n", i/2, vertices[i], vertices[i+1]);
-    }
-
-	glad_glGenVertexArrays(1, &vao);
-	glad_glGenBuffers(1, &vbo);
-
-	printf("VAO ID: %u\n", vao);
-    printf("VBO ID: %u\n", vbo);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glad_glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glad_glBindVertexArray(vao);
-
-	glad_glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
-	glad_glEnableVertexAttribArray(0);
-
-	printf("VAO ID: %u\n", vao);
-	printf("VBO ID: %u\n", vbo);
-
-	char *vertshaderpath = get_shader_path("vertex.glsl");
-	char *fragshaderpath = get_shader_path("fragment.glsl");
-	shaderProgram = createShaderProgram(vertshaderpath, fragshaderpath);
-
-}
-
+// Renders the scene by drawing the cube
 void renderScene(void) {
+    // Set clear color to black
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    // Clear color and depth buffers
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear depth buffer
 
+    // Activate shader program
     glUseProgram(shaderProgram);
-    glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    checkGLError("glUseProgram");
+    // Bind vertex array object
+    glBindVertexArray(VAO);
+    // Draw cube (36 vertices, 12 triangles)
+    glDrawArrays(GL_TRIANGLES, 0, 36); // Draw all 36 vertices (12 triangles)
+    // Unbind VAO
     glBindVertexArray(0);
+}
 
-    GLenum error = glGetError();
-    if (error != GL_NO_ERROR) {
-        printf("OpenGL error in renderScene: %u\n", error);
+// Sets mvp matrix as shader uniform (should input mat4 be static?)
+void renderer_set_matrix(mat4 mvp) {
+    // Pass MVP matrix to shader
+    GLuint mvpLoc = glGetUniformLocation(shaderProgram, "mvp");
+    if (mvpLoc == -1) {
+        printf("Failed to find mvp uniform location\n");
     }
+    glUniformMatrix4fv(mvpLoc, 1, GL_TRUE, (float*)mvp.m); // Send MVP matrix (row-major)
+    checkGLError("glUniformMatrix4fv");
 }

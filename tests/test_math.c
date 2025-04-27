@@ -56,6 +56,25 @@ int test_vec3_dot() {
     }
 }
 
+int test_vec3_cross() {
+    vec3 a = {3.0f, 3.0f, 4.0f};
+    vec3 b = {5.0f, 6.0f, 7.0f};
+    vec3 result = vec3_cross(a, b);
+    vec3 expected = {-3.0f, -1.0f, 3.0f};
+
+    if (result.x == expected.x && result.y == expected.y && result.z == expected.z) {
+        printf("vec3_cross: PASS\n");
+        printf("result: %.15f %.15f %.15f\n", result.x, result.y, result.z);
+        printf("expected: %.15f %.15f %.15f\n", expected.x, expected.y, expected.z);
+        return 1;
+    } else {
+        printf("vec3_cross: FAIL\n");
+        printf("result: %.15f %.15f %.15f\n", result.x, result.y, result.z);
+        printf("expected: %.15f %.15f %.15f\n", expected.x, expected.y, expected.z);
+        return 0;
+    }
+}
+
 int test_vec3_normalize() {
     vec3 v = {1.0f, 2.0f, 3.0f};
     vec3 result = vec3_normalize(v);
@@ -217,6 +236,7 @@ int main() {
     test_vec3_sub();
     test_vec3_scale();
     test_vec3_dot();
+    test_vec3_cross();
     test_vec3_normalize();
     // Call other tests
 
