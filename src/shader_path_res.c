@@ -2,8 +2,66 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <libgen.h>
+
+#include <stddef.h>
+
+
+#ifdef _WIN32
+
+#include <windows.h>
+#include <string.h>
+
+ssize_t readlink_win(const char *path, char *buf, size_t bufsize) {
+    // Special case for /proc/self/exe
+    if (strcmp(path, "/proc/self/exe") == 0) {
+        DWORD len = GetModuleFileNameA(NULL, buf, (DWORD)bufsize);
+        if (len == 0 || len >= bufsize) {
+            fprintf(stderr, "GetModuleFileNameA failed: %ld\n", GetLastError());
+            return -1;
+        }
+        // Normalize backslashes to forward slashes for consistency
+        for (DWORD i = 0; i < len; i++) {
+            if (buf[i] == '\\') buf[i] = '/';
+        }
+        buf[len] = '\0';
+        return (ssize_t)len;
+    }
+
+    // Handle actual symlinks
+    HANDLE hFile = CreateFileA(
+        path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL
+    );
+    if (hFile == INVALID_HANDLE_VALUE) {
+        fprintf(stderr, "CreateFileA failed: %ld\n", GetLastError());
+        return -1;
+    }
+    DWORD len = GetFinalPathNameByHandleA(hFile, buf, (DWORD)bufsize, FILE_NAME_NORMALIZED);
+    CloseHandle(hFile);
+    if (len == 0 || len > bufsize) {
+        fprintf(stderr, "GetFinalPathNameByHandleA failed: %ld\n", GetLastError());
+        return -1;
+    }
+    if (len > 4 && strncmp(buf, "\\\\?\\", 4) == 0) {
+        memmove(buf, buf + 4, len - 4);
+        len -= 4;
+    }
+    for (DWORD i = 0; i < len; i++) {
+        if (buf[i] == '\\') buf[i] = '/';
+    }
+    buf[len] = '\0';
+    return (ssize_t)len;
+}
+#define readlink readlink_win // Map readlink to readlink_win on Windows
+
+#else
+
+#include <unistd.h> // For standard readlink on Unix-like systems
+
+#endif
+
+
 
 #define MAX_PATH 1024
 

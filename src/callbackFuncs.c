@@ -1,7 +1,6 @@
-#include "glad/glad.h"
-#include <GLFW/glfw3.h>
-#include "globals.h"
-#include <stdio.h>
+#include "callbackFuncs.h"
+
+
 
 // Handles mouse movement to update camera yaw and pitch
 // Mouse right/left adjusts yaw, up/down adjusts pitch

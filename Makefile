@@ -48,6 +48,13 @@ $(TESTTARGETS): %: $(TESTOBJDIR)/%.o $(OBJDIR)/math_utils.o | $(OUTPUT_DIR)
 	$(CC) -o $(OUTPUT_DIR)/$@ $^ -lm
 	$(OUTPUT_DIR)/$@
 
+# Windows target
+windows: $(OUTPUT_DIR)/main.exe
+
+$(OUTPUT_DIR)/main.exe:
+	x86_64-w64-mingw32-gcc -Wall -Wextra -Iinclude -static src/*.c -o main.exe /usr/x86_64-w64-mingw32/lib/libopengl32.a -lm libglfw3.a -lgdi32 -luser32
+
+
 # Clean up
 .PHONY: clean
 clean:
